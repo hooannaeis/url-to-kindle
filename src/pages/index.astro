@@ -3,14 +3,282 @@
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>URL to Kindle</title>
+    <style is:global>
+      @import "tailwindcss";
+
+      /* Custom animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes pulseGlow {
+        0%,
+        100% {
+          box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 25px rgba(59, 130, 246, 0.6);
+        }
+      }
+
+      .pulse-glow {
+        animation: pulseGlow 2s ease-in-out infinite;
+      }
+
+      /* Glassmorphism effect */
+      .glass-effect {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen bg-gradient-to-r from-violet-600 to-indigo-600 flex items-center justify-center p-4"
+  >
+    <div class="w-full max-w-md mx-auto">
+      <div
+        class="glass-effect rounded-2xl p-8 shadow-2xl text-white transform transition-all duration-300"
+      >
+        <h1
+          class="text-3xl font-bold text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-200 to-purple-200"
+        >
+          URL to Kindle
+        </h1>
+
+        <div class="space-y-4">
+          <input
+            id="input-field"
+            type="text"
+            placeholder="Enter article URL..."
+            class="cursor-pointer w-full bg-white text-gray-900 bg-opacity-20 rounded-xl px-5 py-3 border border-white border-opacity-30 focus:outline-none focus:border-blue-300 focus:bg-opacity-30 transition-all duration-200"
+          />
+
+          <button
+            id="submit-button"
+            class="cursor-pointer w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50 pulse-glow"
+          >
+            Convert Article
+          </button>
+
+          <button
+            id="send-button"
+            class="cursor-pointer hidden w-full bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-opacity-50"
+          >
+            Send to Kindle
+          </button>
+
+          <button
+            id="restart-button"
+            class="cursor-pointer hidden w-full bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-opacity-50"
+            onclick="document.location.reload()"
+          >
+            Start Over
+          </button>
+        </div>
+
+        <!-- Instructions -->
+        <div class="mt-6 text-center text-sm text-gray-200 opacity-80">
+          <p>Enter any article URL to convert it to Kindle format</p>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    async function handleSubmit() {
+      const submitButton = document.getElementById("submit-button");
+      const inputField = document.getElementById("input-field");
+      const allButtons = document.querySelectorAll("button");
+      const sendButton = document.getElementById("send-button");
+
+      // Disable submit button while waiting for request
+      submitButton.disabled = true;
+
+      try {
+        const url = inputField.value;
+        if (!url) {
+          showError("Please enter a URL");
+          return;
+        }
+
+        // Validate URL format
+        if (!isValidUrl(url)) {
+          showError("Please enter a valid URL (e.g., https://example.com)");
+          return;
+        }
+
+        // Make GET request to /convert with url as query parameter
+        const response = await fetch(`/convert?url=${encodeURIComponent(url)}`);
+
+        if (!response.ok) {
+          throw new Error("Request failed with status: " + response.status);
+        }
+
+        // Extract filename from Content-Disposition header
+        let filename = "article.html"; // default filename
+        const contentDisposition = response.headers.get("Content-Disposition");
+        if (contentDisposition) {
+          const filenameMatch = contentDisposition.match(
+            /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+          );
+          if (filenameMatch && filenameMatch[1]) {
+            filename = filenameMatch[1].replace(/['"]/g, "");
+          }
+        }
+
+        // Get the HTML content from the response
+        const htmlContent = await response.text();
+
+        // Create a blob with the HTML content
+        const blob = new Blob([htmlContent], { type: "text/html" });
+
+        // Create a download link for the HTML file
+        const downloadUrl = URL.createObjectURL(blob);
+
+        // Store the download URL and filename for later use in the send button
+        sendButton.dataset.downloadUrl = downloadUrl;
+        sendButton.dataset.filename = filename;
+
+        // Toggle hidden class on all buttons after request completes
+        allButtons.forEach((button) => {
+          button.classList.toggle("hidden");
+        });
+
+        // Show success message
+        showSuccess("Article converted successfully! Ready to send to Kindle.");
+      } catch (error) {
+        console.error("Error:", error);
+        showError(
+          "An error occurred while processing your request: " + error.message
+        );
+      } finally {
+        // re-enable button
+
+        submitButton.disabled = false;
+      }
+    }
+
+    async function handleSendToKindle() {
+      const sendButton = document.getElementById("send-button");
+      const downloadUrl = sendButton.dataset.downloadUrl;
+      const filename = sendButton.dataset.filename || "article.html";
+
+      if (downloadUrl) {
+        try {
+          // Fetch the blob from the object URL
+          const response = await fetch(downloadUrl);
+          const blob = await response.blob();
+
+          // Create a File object from the blob with the correct filename
+          const file = new File([blob], filename, { type: "text/html" });
+
+          // Check if Web Share API is available and can share files
+          if (
+            navigator.share &&
+            navigator.canShare &&
+            navigator.canShare({ files: [file] })
+          ) {
+            // Use Web Share API to share the file
+            await navigator.share({
+              files: [file],
+              title: "Article for Kindle",
+            });
+            showSuccess("Share completed!");
+          } else {
+            // Fallback: Download file and open email client
+            const downloadLink = document.createElement("a");
+            downloadLink.href = downloadUrl;
+            downloadLink.download = filename;
+            downloadLink.click();
+          }
+        } catch (error) {
+          // If user cancels the share or an error occurs, show message
+          if (error.name !== "AbortError") {
+            console.error("Error sharing:", error);
+            showError("Could not share the file. Downloading instead.");
+
+            // Fallback to download
+            const downloadLink = document.createElement("a");
+            downloadLink.href = downloadUrl;
+            downloadLink.download = filename;
+            downloadLink.click();
+          }
+        }
+      }
+    }
+
+    // Helper function to validate URL
+    function isValidUrl(url) {
+      try {
+        new URL(url);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Helper function to show error messages
+    function showError(message) {
+      const loadingIndicator = document.getElementById("loading-indicator");
+      loadingIndicator.classList.add("hidden");
+
+      // Create error notification
+      const errorNotification = document.createElement("div");
+      errorNotification.className =
+        "fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce";
+      errorNotification.textContent = message;
+      errorNotification.style.animation = "fadeIn 0.3s ease-out";
+
+      document.body.appendChild(errorNotification);
+
+      // Remove after 3 seconds
+      setTimeout(() => {
+        errorNotification.remove();
+      }, 3000);
+
+      // Re-enable submit button
+      const submitButton = document.getElementById("submit-button");
+      submitButton.disabled = false;
+    }
+
+    // Helper function to show success messages
+    function showSuccess(message) {
+      const successNotification = document.createElement("div");
+      successNotification.className =
+        "fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce";
+      successNotification.textContent = message;
+      successNotification.style.animation = "fadeIn 0.3s ease-out";
+
+      document.body.appendChild(successNotification);
+
+      // Remove after 3 seconds
+      setTimeout(() => {
+        successNotification.remove();
+      }, 3000);
+    }
+
+    // Add event listener to submit button
+    document
+      .getElementById("submit-button")
+      .addEventListener("click", handleSubmit);
+
+    // Add event listener to send button
+    document
+      .getElementById("send-button")
+      .addEventListener("click", handleSendToKindle);
+  </script>
 </html>

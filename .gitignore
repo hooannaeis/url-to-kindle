@@ -25,5 +25,3 @@ pnpm-debug.log*
 firebase-debug.log
 package-lock.json
 .firebase/*
-package-lock.json
-package-lock.json
