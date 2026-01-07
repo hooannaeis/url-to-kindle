@@ -39,16 +39,10 @@
       }
     </style>
   </head>
-  <body
-    class="min-h-screen bg-gray-50 flex items-center justify-center p-4"
-  >
+  <body class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
     <div class="w-full max-w-md mx-auto">
-      <div
-        class="bg-white rounded-lg p-8 shadow-sm border border-gray-200"
-      >
-        <h1
-          class="text-2xl font-semibold text-center mb-8 text-gray-900"
-        >
+      <div class="bg-white rounded-lg p-8 shadow-sm border border-gray-200">
+        <h1 class="text-2xl font-semibold text-center mb-8 text-gray-900">
           URL to Kindle
         </h1>
 
@@ -57,27 +51,26 @@
             id="input-field"
             type="text"
             placeholder="Enter article URL..."
-            class="w-full bg-white text-gray-900 rounded-md px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+            class="w-full bg-white text-gray-900 rounded-md px-4 py-2.5 border border-gray-300 focus:outline-none focus:border-gray-900 focus:ring-1 focus:ring-gray-900 disabled:border-gray-200 disabled:bg-gray-50 disabled:text-gray-500"
           />
 
           <button
             id="submit-button"
-            class="disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2.5 px-4 rounded-md transition-all duration-300 flex items-center justify-center gap-2"
+            class="cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2.5 px-4 rounded-md transition-all duration-300 flex items-center justify-center gap-2"
           >
             <span id="submit-text">Convert Article</span>
           </button>
 
           <button
             id="send-button"
-            class="hidden w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2.5 px-4 rounded-md transition-all duration-300 opacity-0"
+            class="cursor-pointer hidden w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2.5 px-4 rounded-md transition-all duration-300 opacity-0"
           >
             Send to Kindle
           </button>
 
           <button
             id="restart-button"
-            class="hidden w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2.5 px-4 rounded-md transition-all duration-300 opacity-0"
-            onclick="document.location.reload()"
+            class="cursor-pointer hidden w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2.5 px-4 rounded-md transition-all duration-300 opacity-0"
           >
             Start Over
           </button>
@@ -91,6 +84,8 @@
     </div>
   </body>
   <script>
+    import { trackEvent } from "../scripts/trackEvent";
+
     async function handleSubmit() {
       const submitButton = document.getElementById("submit-button");
       const submitText = document.getElementById("submit-text");
@@ -99,6 +94,7 @@
 
       // Disable submit button and show loading state
       submitButton.disabled = true;
+      inputField.disabled = true;
       submitText.innerHTML = '<span class="spinner"></span> Converting...';
 
       try {
@@ -107,6 +103,10 @@
           showError("Please enter a URL");
           return;
         }
+        trackEvent({
+          event_name: "submission_started",
+          content_url: url,
+        });
 
         // Validate URL format
         if (!isValidUrl(url)) {
@@ -145,7 +145,10 @@
         // Store the download URL and filename for later use in the send button
         sendButton.dataset.downloadUrl = downloadUrl;
         sendButton.dataset.filename = filename;
-
+        trackEvent({
+          event_name: "submission_processed",
+          content_url: url,
+        });
         // Show success message
         showSuccess("Article converted successfully! Ready to send to Kindle.");
 
@@ -200,6 +203,11 @@
               files: [file],
               title: "Article for Kindle",
             });
+            trackEvent({
+              event_name: "submission_shared",
+              content_url: downloadUrl,
+              share_type: "navigator_share",
+            });
             showSuccess("Share completed!");
           } else {
             // Fallback: Download file and open email client
@@ -207,6 +215,11 @@
             downloadLink.href = downloadUrl;
             downloadLink.download = filename;
             downloadLink.click();
+            trackEvent({
+              event_name: "submission_shared",
+              content_url: downloadUrl,
+              share_type: "file_download",
+            });
           }
         } catch (error) {
           // If user cancels the share or an error occurs, show message
@@ -264,7 +277,10 @@
       errorNotification.style.animation = "fadeIn 0.3s ease-out";
 
       document.body.appendChild(errorNotification);
-
+      trackEvent({
+        event_name: "error_shown",
+        error_message: message,
+      });
       // Remove after 3 seconds
       setTimeout(() => {
         errorNotification.remove();
@@ -287,10 +303,22 @@
       }, 3000);
     }
 
+    function handleRestart() {
+      trackEvent({
+        event_name: "reload",
+      });
+      document.location.reload();
+    }
+
     // Add event listener to submit button
     document
       .getElementById("submit-button")
       .addEventListener("click", handleSubmit);
+
+    // Add event listener to submit button
+    document
+      .getElementById("restart-button")
+      .addEventListener("click", handleRestart);
 
     // Add event listener to send button
     document
