@@ -1,0 +1,41 @@
+---
+export interface Props {
+  pageTitle?: string;
+  eventName?: string;
+  eventParams?: Object;
+}
+
+const {
+  pageTitle = "default title",
+  eventName = "page_view",
+  eventParams,
+} = Astro.props;
+---
+
+<analytics-pixel
+  data-pageTitle={pageTitle} 
+  data-eventName={eventName}
+  data-eventParams={JSON.stringify(eventParams)}
+>
+</analytics-pixel>
+
+<script>
+  import { trackEvent } from "../scripts/trackEvent";
+  class AnalyticsPixel extends HTMLElement {
+    connectedCallback() {
+      let parsedParams = {};
+      if (this?.dataset?.eventparams) {
+        parsedParams = JSON.parse(this?.dataset?.eventparams);
+      }
+
+      trackEvent({
+        page_title: this?.dataset?.pagetitle,
+        event_name: this?.dataset?.eventname,
+        ...parsedParams,
+      });
+    }
+  }
+
+  // Tell the browser to use our AstroHeart class for <astro-heart> elements.
+  customElements.define("analytics-pixel", AnalyticsPixel);
+</script>
