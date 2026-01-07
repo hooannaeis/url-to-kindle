@@ -102,7 +102,6 @@
     async function handleSubmit() {
       const submitButton = document.getElementById("submit-button");
       const inputField = document.getElementById("input-field");
-      const allButtons = document.querySelectorAll("button");
       const sendButton = document.getElementById("send-button");
 
       // Disable submit button while waiting for request
@@ -153,11 +152,6 @@
         sendButton.dataset.downloadUrl = downloadUrl;
         sendButton.dataset.filename = filename;
 
-        // Toggle hidden class on all buttons after request completes
-        allButtons.forEach((button) => {
-          button.classList.toggle("hidden");
-        });
-
         // Show success message
         showSuccess("Article converted successfully! Ready to send to Kindle.");
       } catch (error) {
@@ -166,14 +160,17 @@
           "An error occurred while processing your request: " + error.message
         );
       } finally {
-        // re-enable button
-
-        submitButton.disabled = false;
+        // hide submit button
+        submitButton?.classList.toggle("hidden");
+        // show send button
+        sendButton?.classList.toggle("hidden");
       }
     }
 
     async function handleSendToKindle() {
       const sendButton = document.getElementById("send-button");
+      const restartButton = document.getElementById("restart-button");
+
       const downloadUrl = sendButton.dataset.downloadUrl;
       const filename = sendButton.dataset.filename || "article.html";
 
@@ -217,7 +214,13 @@
             downloadLink.download = filename;
             downloadLink.click();
           }
+        } finally {
+          sendButton?.classList.toggle("hidden");
+          restartButton?.classList.toggle("hidden");
         }
+      } else {
+        sendButton?.classList.toggle("hidden");
+        restartButton?.classList.toggle("hidden");
       }
     }
 
@@ -233,7 +236,6 @@
 
     // Helper function to show error messages
     function showError(message) {
-
       // Create error notification
       const errorNotification = document.createElement("div");
       errorNotification.className =
