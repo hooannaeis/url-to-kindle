@@ -31,7 +31,7 @@ setGlobalOptions({ maxInstances: 10 });
 exports.convert = onRequest(
   {
     region: "europe-west3", // Region moved inside options object
-    cors: ['https://url-to-kindle.web.app'],
+    cors: ['https://url-to-kindle.web.app', 'https://url-to-kindle.hannes.cool'],
     maxInstances: 2, // Optional: limits scaling to control costs
     memory: "256MiB",
     timeoutSeconds: 20,
