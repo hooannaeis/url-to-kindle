@@ -1,6 +1,5 @@
 ---
 import Footer from "../components/Footer.astro";
-import CSPHeader from "../components/CSPHeader.astro";
 import AnalyticsPixel from "../components/AnalyticsPixel.astro";
 import MetaTags from "../components/MetaTags.astro";
 import BaseStyles from "../components/BaseStyles.astro";
@@ -15,7 +14,6 @@ const { title } = Astro.props;
 <!doctype html>
 <html lang="en">
   <head>
-    <CSPHeader />
     <BaseStyles />
     <MetaTags title={title} />
     <AnalyticsPixel
