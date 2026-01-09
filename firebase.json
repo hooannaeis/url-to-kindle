@@ -13,6 +13,11 @@
       ]
     }
   ],
+  "emulators": {
+    "functions": {
+      "port": 5001
+    }
+  },
   "hosting": {
     "source": ".",
     "predeploy": "npm run build",
