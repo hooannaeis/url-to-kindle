@@ -8,22 +8,31 @@ const canonicalURL = new URL(Astro.url.href);
 
 <title>{title}</title>
 <meta charset="UTF-8" />
-<link rel="icon" type="image/svg+xml" href="/favicon.png" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="canonical" href={canonicalURL} />
 <meta name="generator" content={Astro.generator} />
 
 <!-- recommended by tailwind: https://tailwindcss.com/docs/responsive-design -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <!-- General Meta Tags -->
 <meta name="title" content="CaseTrace - European Legislation Interlinked" />
 <meta name="description" content={title} />
-<meta property="og:site_name" content="CaseTrace - European Legislation Interlinked">
-<meta property="og:title" content="CaseTrace - European Legislation Interlinked" />
-<meta property="og:type" content="website">
+<meta
+  property="og:site_name"
+  content="CaseTrace - European Legislation Interlinked"
+/>
+<meta
+  property="og:title"
+  content="CaseTrace - European Legislation Interlinked"
+/>
+<meta property="og:type" content="website" />
 <meta property="og:url" content={canonicalURL} />
-<meta property="og:image" itemprop="image primaryImageOfPage" content="https://case-trace.com/logo.svg">
-
+<meta
+  property="og:image"
+  itemprop="image primaryImageOfPage"
+  content="https://case-trace.com/logo.svg"
+/>
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
