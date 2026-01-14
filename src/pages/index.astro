@@ -3,63 +3,95 @@ import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="URL to Kindle">
-  <div class="bg-slate-50 rounded-t-lg p-8 shadow-sm border border-slate-200">
-    <div class="flex flex-col items-center justify-center gap-3 mb-6">
-      <div class="flex flex-row items-center justify-center gap-3">
-        <img src="/favicon.svg" alt="URL to Kindle Logo" class="h-8 w-8" />
-        <h1 class="text-2xl font-medium">URL to Kindle</h1>
+  <div
+    class="max-w-md mx-auto my-10 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl"
+  >
+    <div class="p-8 bg-gradient-to-b from-slate-800/50 to-transparent">
+      <div class="flex flex-col items-center justify-center gap-4 mb-8">
+        <div
+          class="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 shadow-inner"
+        >
+          <img src="/favicon.svg" alt="URL to Kindle Logo" class="h-10 w-10" />
+        </div>
+        <div class="text-center">
+          <h1>URL to Kindle</h1>
+          <p class="mt-2 text-sm text-slate-400 italic">
+            Your ideal read-later browser-tab cleaner
+          </p>
+        </div>
       </div>
-      <span class="italic text-slate-500">
-        Use your Kindle as the ideal read-later browser-tab cleaner
-      </span>
+
+      <div class="space-y-5">
+        <div class="relative group">
+          <input
+            id="input-field"
+            type="text"
+            placeholder="https://example.com/article"
+            class="w-full bg-slate-950/50 text-slate-200 rounded-xl px-4 py-3.5 border border-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-600 disabled:opacity-50"
+          />
+        </div>
+
+        <button
+          id="submit-button"
+          class="group relative w-full overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-[1px] font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] active:scale-[0.98] disabled:from-slate-700 disabled:to-slate-800 disabled:cursor-not-allowed"
+        >
+          <div
+            class="flex h-12 w-full items-center justify-center rounded-[11px] bg-slate-900 transition-all group-hover:bg-transparent"
+          >
+            <span id="submit-text" class="flex items-center gap-2">
+              Convert Article
+            </span>
+          </div>
+        </button>
+
+        <button
+          id="send-button"
+          class="hidden w-full h-12 items-center justify-center gap-2 rounded-xl bg-emerald-500 font-bold text-slate-950 transition-all hover:bg-emerald-400 opacity-0 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+        >
+          Send to Kindle
+        </button>
+
+        <button
+          id="restart-button"
+          class="hidden w-full h-12 items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-slate-300 font-medium transition-all hover:bg-slate-700 opacity-0"
+        >
+          Start Over
+        </button>
+      </div>
     </div>
 
-    <div class="space-y-4">
-      <input
-        id="input-field"
-        type="text"
-        placeholder="Enter URL..."
-        class="w-full bg-slate-50 text-slate-500 rounded-md px-4 py-2.5 border border-slate-300 focus:outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600 disabled:border-slate-200 disabled:bg-slate-50 disabled:text-slate-500"
-      />
-
-      <button
-        id="submit-button"
-        class="cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 w-full bg-slate-600 hover:bg-slate-600 text-slate-50 font-medium py-2.5 px-4 rounded-md transition-all duration-300 flex items-center justify-center gap-2"
-      >
-        <span id="submit-text">Convert Article</span>
-      </button>
-
-      <button
-        id="send-button"
-        class="cursor-pointer hidden w-full bg-slate-600 hover:bg-slate-600 text-slate-50 font-medium py-2.5 px-4 rounded-md transition-all duration-300 opacity-0"
-      >
-        Send to Kindle
-      </button>
-
-      <button
-        id="restart-button"
-        class="cursor-pointer hidden w-full bg-slate-600 hover:bg-slate-600 text-slate-50 font-medium py-2.5 px-4 rounded-md transition-all duration-300 opacity-0"
-      >
-        Start Over
-      </button>
-    </div>
-
-    <!-- Instructions -->
-  </div>
-  <div class="bg-slate-200 rounded-b-lg p-8 border border-slate-200">
-    <h2>How it works</h2>
-    <div class="mt-6 text-center text-sm text-slate-500">
-      <ol>
-        <li>1. submit the URL of the website you want to convert</li>
-        <li>2. wait for the kindle-compatible file to be created</li>
-        <li>
-          3. share the file via from your device to your <a
-            class="underline"
-            href="https://www.amazon.com/sendtokindle/email"
-            target="_blank">kindle-email</a
+    <div class="bg-slate-950/50 p-8 border-t border-slate-800">
+      <h2>How it works</h2>
+      <ul class="space-y-3 text-sm text-slate-400">
+        <li class="flex gap-3">
+          <span
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-xs font-bold text-slate-300"
+            >1</span
+          >
+          <span>Submit the URL of the article</span>
+        </li>
+        <li class="flex gap-3">
+          <span
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-xs font-bold text-slate-300"
+            >2</span
+          >
+          <span>Wait for the optimized Kindle file</span>
+        </li>
+        <li class="flex gap-3">
+          <span
+            class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-xs font-bold text-slate-300"
+            >3</span
+          >
+          <span
+            >Share to your <a
+              href="https://www.amazon.com/sendtokindle/email"
+              target="_blank"
+              class="text-indigo-400 hover:text-indigo-300 underline decoration-indigo-400/30 underline-offset-4 transition-colors"
+              >Kindle Email</a
+            ></span
           >
         </li>
-      </ol>
+      </ul>
     </div>
   </div>
 

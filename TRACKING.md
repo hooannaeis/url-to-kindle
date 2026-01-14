@@ -1,7 +1,7 @@
 # Tracking Documentation
 
 ## Overview
-This application uses a custom event tracking system implemented via the `trackEvent` function, located in `src/scripts/trackEvent.js`. This function sends event data using `navigator.sendBeacon` to the `transportUrl`: `https://sgtm.case-trace.com/btnt`.
+This application uses a custom event tracking system implemented via the `trackEvent` function, located in `src/scripts/trackEvent.js`. This function sends event data using `navigator.sendBeacon` to the `transportUrl`: `https://sgtm.hannes.cool/btnt`.
 
 Every tracked event automatically includes the following default parameters:
 - `event_name` (string): The name of the event. Defaults to "default_event_name" if not explicitly provided.

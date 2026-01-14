@@ -42,7 +42,7 @@ function trackEvent(eventParams) {
   eventParams.page_load_id = eventParams.page_load_id || window.__pid;
 
   const pixelPayload = getPixelPayload(eventParams);
-  const transportUrl = "https://sgtm.case-trace.com/btnt";
+  const transportUrl = "https://sgtm.hannes.cool/btnt";
 
   if (isDebug()) {
     console.log("track event: ");
