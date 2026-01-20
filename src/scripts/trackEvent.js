@@ -45,6 +45,7 @@ function trackEvent(eventParams) {
   const transportUrl = "https://sgtm.hannes.cool/btnt";
 
   if (isDebug()) {
+    eventParams.debug_mode = true;
     console.log("track event: ");
     console.table(eventParams);
   }
