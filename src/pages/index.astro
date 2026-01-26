@@ -117,7 +117,7 @@ import Layout from "../layouts/Layout.astro";
         }
         trackEvent({
           event_name: "submission_started",
-          content_url: url,
+          content_url: getHostFromUrl(url),
         });
 
         // Validate URL format
@@ -133,7 +133,7 @@ import Layout from "../layouts/Layout.astro";
             "http://127.0.0.1:5001/url-to-kindle/europe-west3/convert";
         }
         const response = await fetch(
-          `${conversionPath}?url=${encodeURIComponent(url)}`
+          `${conversionPath}?url=${encodeURIComponent(url)}`,
         );
 
         if (!response.ok) {
@@ -164,7 +164,7 @@ import Layout from "../layouts/Layout.astro";
         sendButton.dataset.filename = filename;
         trackEvent({
           event_name: "submission_processed",
-          content_url: url,
+          content_url: getHostFromUrl(url),
         });
         // Show success message
         showSuccess("Article converted successfully! Ready to send to Kindle.");
@@ -185,7 +185,7 @@ import Layout from "../layouts/Layout.astro";
       } catch (error) {
         console.error("Error:", error);
         showError(
-          "An error occurred while processing your request: " + error.message
+          "An error occurred while processing your request: " + error.message,
         );
         // Reset button state on error
         submitButton.disabled = false;
@@ -281,6 +281,15 @@ import Layout from "../layouts/Layout.astro";
         return true;
       } catch (e) {
         return false;
+      }
+    }
+
+    function getHostFromUrl(url) {
+      try {
+        const parsed = new URL(url);
+        return parsed.host;
+      } catch (e) {
+        return "invalid URL";
       }
     }
 
