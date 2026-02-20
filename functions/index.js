@@ -31,13 +31,15 @@ setGlobalOptions({ maxInstances: 10 });
 exports.convert = onRequest(
   {
     region: "europe-west3", // Region moved inside options object
-    cors: ['https://url-to-kindle.web.app', 'https://url-to-kindle.hannes.cool'],
+    cors: [
+      "https://url-to-kindle.web.app",
+      "https://url-to-kindle.hannes.cool",
+    ],
     maxInstances: 2, // Optional: limits scaling to control costs
     memory: "256MiB",
     timeoutSeconds: 60,
   },
   async (request, response) => {
-
     // Handle preflight requests
     if (request.method === "OPTIONS") {
       response.status(204).send("");
@@ -67,27 +69,26 @@ exports.convert = onRequest(
 
       // Make title filename-safe for the download
       const safeTitle = makeFilenameSafe(title);
-      
+
       // Add frontmatter to the markdown
       const frontmatter = `---\ntitle: ${title}\nauthor: ${author}\n---\n\n`;
-      const markdownWithFrontmatter = frontmatter + markdown;
-      
-      logger.info(frontmatter)
+
+      logger.info(frontmatter);
       // Convert markdown to HTML
-      const html = marked(markdownWithFrontmatter);
+      const html = marked(markdown);
 
       // Set response headers for HTML file
       response.set("Content-Type", "application/force-download");
       response.set(
         "Content-Disposition",
-        `attachment; filename=${safeTitle}.html`
+        `attachment; filename=${safeTitle}.html`,
       );
       response.send(html);
     } catch (error) {
       logger.error("Error in convert function:", error);
       response.status(500).send("Error processing URL: " + error.message);
     }
-  }
+  },
 );
 
 /**
@@ -116,7 +117,7 @@ function makeFilenameSafe(str) {
     .replace(/_+/g, "_") // Replace multiple underscores with single
     .replace(/^_+|_+$/g, "") // Trim underscores from start/end
     .substring(0, 100) // Limit length to prevent overly long filenames
-    .toLocaleLowerCase()
+    .toLocaleLowerCase();
 }
 
 /**
