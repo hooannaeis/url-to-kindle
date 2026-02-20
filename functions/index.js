@@ -34,7 +34,7 @@ exports.convert = onRequest(
     cors: ['https://url-to-kindle.web.app', 'https://url-to-kindle.hannes.cool'],
     maxInstances: 2, // Optional: limits scaling to control costs
     memory: "256MiB",
-    timeoutSeconds: 20,
+    timeoutSeconds: 60,
   },
   async (request, response) => {
 
@@ -110,7 +110,8 @@ function makeFilenameSafe(str) {
   // Remove or replace characters that are not allowed in filenames
   // Replace common problematic characters with underscores or remove them
   return str
-    .replace(/['’\(\)<>:"/\\|?*\x00-\x1F]/g, "") // Remove illegal characters
+    .replace(/[^\x20-\x7E]/g, "") // Remove all non-ASCII characters
+    .replace(/[''\(\)<>:"/\\|?*\x00-\x1F]/g, "") // Remove illegal filename characters
     .replace(/\s+/g, "_") // Replace whitespace with underscores
     .replace(/_+/g, "_") // Replace multiple underscores with single
     .replace(/^_+|_+$/g, "") // Trim underscores from start/end
