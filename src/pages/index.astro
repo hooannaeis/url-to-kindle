@@ -350,5 +350,18 @@ import Layout from "../layouts/Layout.astro";
     document
       .getElementById("send-button")
       .addEventListener("click", handleSendToKindle);
+
+    // Auto-submit if a valid URL is provided in the hash fragment
+    (function checkHashForUrl() {
+      const hash = window.location.hash;
+      if (hash && hash.length > 1) {
+        const urlFromHash = decodeURIComponent(hash.substring(1));
+        if (isValidUrl(urlFromHash)) {
+          const inputField = document.getElementById("input-field");
+          inputField.value = urlFromHash;
+          handleSubmit();
+        }
+      }
+    })();
   </script>
 </Layout>
