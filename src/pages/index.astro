@@ -141,7 +141,7 @@ import Layout from "../layouts/Layout.astro";
         }
 
         // Extract filename from Content-Disposition header
-        let filename = "article.epub"; // default filename
+        let filename = "article.pdf"; // default filename
         const contentDisposition = response.headers.get("content-disposition");
         if (contentDisposition) {
           const split = contentDisposition.split("filename=");
@@ -150,11 +150,8 @@ import Layout from "../layouts/Layout.astro";
           }
         }
 
-        // Get the HTML content from the response
-        const htmlContent = await response.text();
-
-        // Create a blob with the HTML content
-        const blob = new Blob([htmlContent], { type: "text/html" });
+        // Get the PDF binary content from the response
+        const blob = await response.blob();
 
         // Create a download link for the HTML file
         const downloadUrl = URL.createObjectURL(blob);
@@ -198,7 +195,7 @@ import Layout from "../layouts/Layout.astro";
       const restartButton = document.getElementById("restart-button");
 
       const downloadUrl = sendButton.dataset.downloadUrl;
-      const filename = sendButton.dataset.filename || "article.html";
+      const filename = sendButton.dataset.filename || "article.pdf";
 
       if (downloadUrl) {
         try {
@@ -207,7 +204,7 @@ import Layout from "../layouts/Layout.astro";
           const blob = await response.blob();
 
           // Create a File object from the blob with the correct filename
-          const file = new File([blob], filename, { type: "text/html" });
+          const file = new File([blob], filename, { type: "application/pdf" });
 
           // Check if Web Share API is available and can share files
           if (

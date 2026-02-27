@@ -12,6 +12,14 @@ const { onRequest } = require("firebase-functions/https");
 const logger = require("firebase-functions/logger");
 const axios = require("axios");
 const { marked } = require("marked");
+const puppeteer = require("puppeteer-core");
+const chromium = require("@sparticuz/chromium");
+const path = require("path");
+const fs = require("fs");
+
+// Pre-load the font as base64 at cold start
+const fontPath = path.join(__dirname, "fonts", "NotoSans-Regular.ttf");
+const fontBase64 = fs.readFileSync(fontPath).toString("base64");
 
 // For cost control, you can set the maximum number of containers that can be
 // running at the same time. This helps mitigate the impact of unexpected
@@ -36,8 +44,8 @@ exports.convert = onRequest(
       "https://url-to-kindle.hannes.cool",
     ],
     maxInstances: 2, // Optional: limits scaling to control costs
-    memory: "256MiB",
-    timeoutSeconds: 60,
+    memory: "1GiB",
+    timeoutSeconds: 120,
   },
   async (request, response) => {
     // Handle preflight requests
@@ -74,16 +82,107 @@ exports.convert = onRequest(
       const frontmatter = `---\ntitle: ${title}\nauthor: ${author}\n---\n\n`;
 
       logger.info(frontmatter);
-      // Convert markdown to HTML
-      const html = marked(markdown);
+      // Convert markdown to HTML with styling for PDF
+      const articleHtml = marked(markdown);
+      const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    @font-face {
+      font-family: 'Noto Sans';
+      src: url(data:font/truetype;base64,${fontBase64}) format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    body {
+      font-family: 'Noto Sans', sans-serif;
+      line-height: 1.6;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1 { font-size: 1.8em; margin-bottom: 0.5em; }
+    h2 { font-size: 1.4em; margin-top: 1.5em; }
+    h3 { font-size: 1.2em; margin-top: 1.2em; }
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      margin: 1em auto;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 12px;
+      overflow-x: auto;
+      border-radius: 4px;
+    }
+    code {
+      background: #f4f4f4;
+      padding: 2px 4px;
+      border-radius: 2px;
+      font-size: 0.9em;
+    }
+    blockquote {
+      border-left: 3px solid #ccc;
+      margin-left: 0;
+      padding-left: 16px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>${title}</h1>
+  <p><em>Source: ${author}</em></p>
+  <hr>
+  ${articleHtml}
+</body>
+</html>`;
 
-      // Set response headers for HTML file
-      response.set("Content-Type", "application/force-download");
-      response.set(
-        "Content-Disposition",
-        `attachment; filename=${safeTitle}.html`,
-      );
-      response.send(html);
+      // Generate PDF with Puppeteer
+      let browser;
+      try {
+        browser = await puppeteer.launch({
+          args: chromium.args,
+          defaultViewport: chromium.defaultViewport,
+          executablePath: await chromium.executablePath(),
+          headless: "new",
+        });
+        const page = await browser.newPage();
+
+        // Log any page errors for debugging
+        page.on("pageerror", (err) => logger.error("Page error:", err.message));
+        page.on("console", (msg) => logger.info("Page console:", msg.text()));
+
+        await page.setContent(html, { waitUntil: "networkidle0", timeout: 30000 });
+
+        // Verify the page has content
+        const bodyText = await page.evaluate(() => document.body.innerText.substring(0, 200));
+        logger.info(`Page body preview: "${bodyText}"`);
+
+        logger.info("Page content set, generating PDF...");
+
+        const pdfBuffer = await page.pdf({
+          format: "A4",
+          printBackground: true,
+          margin: { top: "20mm", bottom: "20mm", left: "15mm", right: "15mm" },
+        });
+
+        logger.info(`PDF generated, size: ${pdfBuffer.length} bytes`);
+
+        // Set response headers for PDF file
+        response.set("Content-Type", "application/pdf");
+        response.set(
+          "Content-Disposition",
+          `attachment; filename=${safeTitle}.pdf`,
+        );
+        response.send(Buffer.from(pdfBuffer));
+      } finally {
+        if (browser) {
+          await browser.close();
+        }
+      }
     } catch (error) {
       logger.error("Error in convert function:", error);
       response.status(500).send("Error processing URL: " + error.message);
